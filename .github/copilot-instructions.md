@@ -7,6 +7,6 @@ plus this repo's own `AGENTS.md` rules. Use the same standard as every other age
 
 Key rules: TypeScript strict (no `any`); no backend `fetch` from an app (use
 `@qyne/core`); never log/expose PII or secrets; authorize server-side from the JWT;
-conventional commits authored as `qyne-dev <support@qyne.one>` with no AI
-attribution; branch off `develop`; never push to `main`/`develop` and never merge a
+conventional commits authored with your own org `@qyne.one` GitHub identity (no bot/AI
+attribution); branch off `develop`; never push to `main`/`develop` and never merge a
 PR (a human maintainer merges).

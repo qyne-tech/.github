@@ -35,8 +35,9 @@ Work branches off `develop`:
 
 - **Conventional commits** (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`,
   `test:`, `ci:`).
-- **Commit as `qyne-dev <support@qyne.one>`** — never a personal/other-org
-  identity (`git config user.name "qyne-dev" && git config user.email "support@qyne.one"`).
+- **Commit with your own org GitHub identity** — the `@qyne.one` account you were
+  granted access with. Set `user.name` / `user.email` to it; don't commit under an
+  unrelated personal or other-employer identity.
 - Open a PR into `develop`; it must pass CI and get a review.
 - **The maintainer merges — do not self-merge.** Prefer **squash-merge**.
 - A release is a PR from `develop` → `main`.

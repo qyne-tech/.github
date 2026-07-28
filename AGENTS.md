@@ -34,8 +34,9 @@ repo — link to it.
   `@qyne/core` client. Don't reimplement shared logic; put it in `packages/*`.
 - **Never log or expose PII / payloads / secrets / tokens.** Authorize
   server-side from the JWT `sub`, never from a request body.
-- **Commit as `qyne-dev <support@qyne.one>`.** Never a personal or other-org
-  identity. **No AI/tool attribution** in commits or PRs.
+- **Commit with the operator's own org GitHub identity** (the `@qyne.one` account
+  configured for the repo) — never invent a bot/AI identity or use an unrelated
+  one. **No AI/tool attribution** in commits or PRs.
 - **Conventional commits; branch off `develop`; never push to `main`/`develop`
   directly — always a PR.**
 - **Do NOT merge PRs.** Open the PR, ensure CI is green, and stop — a human

@@ -125,9 +125,9 @@ here instead, so there is one place to change them.
   `main` or `develop` directly — always via PR.
 - **Conventional commits:** `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`,
   `test:`, `ci:`. Subject in the imperative, ≤ 72 chars; body explains *why*.
-- **Commit identity is `qyne-dev <support@qyne.one>`** for all QYNE work — never a
-  personal/other-org identity. Configure per-repo:
-  `git config user.name "qyne-dev" && git config user.email "support@qyne.one"`.
+- **Commit with your own org identity** — the GitHub account you were granted
+  access with (your `@qyne.one` account). Set `user.name` / `user.email` to it;
+  don't commit under an unrelated personal or other-employer identity.
 - **No AI/tool attribution** in commit messages or PR descriptions.
 - Small, focused commits; each one builds.
 
