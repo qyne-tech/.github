@@ -24,6 +24,9 @@ repo — link to it.
 1. This repo's `AGENTS.md` (stack-specific rules) and `README.md`.
 2. The org [CODING_STANDARDS.md](CODING_STANDARDS.md) and
    [CONTRIBUTING.md](CONTRIBUTING.md).
+3. If the work touches wearable data in any way, read
+   [docs/WEARABLE-DATA-INVARIANTS.md](docs/WEARABLE-DATA-INVARIANTS.md)
+   **before designing**, not while reviewing.
 
 ## Non-negotiables (the rules an agent must never miss)
 
@@ -45,6 +48,10 @@ repo — link to it.
   annotations.
 - **Verify before "done":** run format, lint, typecheck, test, build; don't claim
   green without running it.
+- **Wearable data: accuracy outranks completeness, and a feature must hold for
+  every provider, not the one in front of you.** The invariants are in
+  [docs/WEARABLE-DATA-INVARIANTS.md](docs/WEARABLE-DATA-INVARIANTS.md); a design
+  that satisfies one source and breaks the rest is not done.
 
 ## Definition of done
 
