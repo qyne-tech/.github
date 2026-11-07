@@ -87,6 +87,11 @@ here instead, so there is one place to change them.
   caller can't infer (nullability, side effects, units).
 - **No noise** — no `// increment i`, no commented-out code, no changelog
   comments (git is the changelog).
+- **A metric change includes its documentation.** Move a formula, weight,
+  constant, threshold, band, unit, rollup or empty state, and update that
+  figure's entry in `qyne-web/src/data/metricDocs.ts` (or
+  `metricPipeline.ts` for provenance) in the **same** PR. Both doc pages render
+  from that data, and every entry cites the file it was transcribed from.
 
 ## 6. Error handling
 
@@ -118,7 +123,93 @@ here instead, so there is one place to change them.
 - **Don't weaken a security gate** (e.g. prod Swagger off) without an explicit
   reason in the PR.
 
-## 9. Git & commits
+## 9. Observability (logs and audit)
+
+Two systems with different jobs. **Logs** answer "what is the system doing and
+why did it break"; they are disposable. The **audit trail** answers "who did
+what to whose data, and did it succeed"; it is evidence. Most changes touch
+both, and losing the second one is a compliance hole rather than a debugging
+inconvenience.
+
+### Structured, always
+
+- **Log an object, never an interpolated string.** `logger.warn({ msg: 'auth
+  rejected', reason: 'expired_token' })`, not `` logger.warn(`auth rejected:
+  ${err.message}`) ``. A string is unqueryable, and it bypasses the redactor,
+  which only reaches structured fields.
+- **Every line carries `msg`** as a short, stable, lower-case event name. Treat
+  it as an identifier: alerts and dashboards key off it, so renaming one is a
+  breaking change.
+- **Reason codes, not prose.** A rejection logs `reason: 'no_bearer_header'`,
+  a stable snake-case value from a known set. Prose cannot be counted.
+- **Correlation is free.** The request id and caller are stamped automatically.
+  Never thread them through a signature, and never interpolate an id that is
+  already a field.
+
+### What must be logged
+
+Prohibitions alone do not make a system observable. Each of these needs a line:
+
+- **Every outbound dependency call**: the provider, the operation, `durationMs`,
+  and the outcome. When the product is slow, this is what separates our latency
+  from a provider's.
+- **Every rejection or degradation the caller cannot see**: a skipped
+  reconciliation, a dropped notification, a fallback taken, a limit hit.
+- **Every batch outcome**: accepted, rejected and retracted counts. Counts, not
+  contents.
+- **Start-up and shutdown**: the effective configuration at boot (environment,
+  log levels, which integrations are enabled) and the signal that ended the
+  process. An instance that recycled must be distinguishable from one that
+  crashed.
+
+A plain handler needs no logging of its own. The access line and the global
+error filter already cover it. Add logs for the interesting middle: decisions,
+degradations and batch outcomes.
+
+### Never logged
+
+No bodies, no measurements, no identity (phone, email, name, date of birth,
+address), no credentials. Ids, counts, durations, status codes, outcomes and
+reason codes are safe. See [§8](#8-security--data-health--identity--treat-as-sensitive).
+
+Health data in a URL path is included: a route whose parameter is itself a
+measurement or a date of one is logged as its template, never its value.
+
+### Audit the privileged surface
+
+- **Audit anything that creates, changes, exports or deletes user data, and
+  anything that grants or denies access.** Retracting a measurement counts.
+  Minting a credential counts. A read counts once anyone can read data that is
+  not their own.
+- **Record failures and denials, not just successes.** In an incident the
+  rejected attempts are usually the interesting ones.
+- **Use the typed action vocabulary**, never a free string, so the privileged
+  surface stays reviewable in one place. Adding an action is a deliberate act.
+- **Commit the audit row with the write.** Inside a transaction, pass the
+  transaction handle: an audit entry for a write that never landed is worse than
+  no entry.
+- **The payload is metadata.** Counts, ids and reasons. Never measurements, and
+  never the content of what changed.
+- **The trail is append-only.** Nothing in the application may update or delete
+  an audit row, and the database role it connects with should not be able to.
+
+### Ready for the log pipeline
+
+The service may be shipping to nothing but stdout today. It must still be
+queryable the day a pipeline is attached, which means the shape cannot be an
+afterthought:
+
+- **Every line identifies its origin**: service name, environment, and the build
+  it came from. Without the build, no regression can be tied to a deploy.
+- **Route labels are templates, not values.** `/articles/:id`, never
+  `/articles/0fc45698-...`. An unbounded label is useless as a dimension and
+  expensive as a metric.
+- **The dimension that predicts cost is a field.** A request whose work scales
+  with a parameter records that parameter, or its latency cannot be explained.
+- **One event per line, JSON in every deployed environment.** Human-readable
+  output is for a terminal, not for a log group.
+
+## 10. Git & commits
 
 - **Branch flow** (see [CONTRIBUTING.md](CONTRIBUTING.md) for the full table):
   work off `develop`; `feat/*`, `fix/*`, `chore/*`, `hotfix/*`. Never push to
@@ -131,7 +222,7 @@ here instead, so there is one place to change them.
 - **No AI/tool attribution** in commit messages or PR descriptions.
 - Small, focused commits; each one builds.
 
-## 10. Pull requests
+## 11. Pull requests
 
 - **Small and focused** — one concern per PR. Split unrelated changes.
 - **Describe the change**: what, why, how verified. Screenshots for UI. Link the
@@ -143,12 +234,20 @@ here instead, so there is one place to change them.
   is the maintainer's call. Prefer **squash-merge**.
 - A release is a PR from `develop` → `main`.
 
-## 11. Definition of done
+## 12. Definition of done
 
 - CI green (format, lint, typecheck, test, build).
 - Input validated; auth server-side; no secrets/PII in code or logs.
 - Tests for new logic; a failing-then-passing test for bug fixes.
+- Observable in production: logs are structured objects with a stable `msg`,
+  every outbound call records its duration and outcome, and every rejection
+  carries a reason code ([§9](#9-observability-logs-and-audit)).
+- Privileged action audited with a typed action, inside the transaction that
+  performs it, with failures and denials recorded too ([§9](#9-observability-logs-and-audit)).
 - Docs current — README, and any repo-specific contract docs (OpenAPI/Swagger on
   the backend), updated or explicitly confirmed unaffected.
+- Metric documentation current — if the change touches a figure an athlete sees,
+  its entry in `qyne-web/src/data/metricDocs.ts` is updated in the same PR, or
+  explicitly confirmed unaffected.
 - Repo-specific "definition of done" (in that repo's `AGENTS.md`/`CONTRIBUTING.md`)
   also satisfied.

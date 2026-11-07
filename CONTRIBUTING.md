@@ -71,5 +71,5 @@ docs). If a change genuinely touches neither, say so in the PR.
 
 ## Definition of done
 
-See [Coding Standards §11](CODING_STANDARDS.md#11-definition-of-done), plus the
+See [Coding Standards §12](CODING_STANDARDS.md#12-definition-of-done), plus the
 repo-specific "Definition of done" in that repo's `CONTRIBUTING.md` / `AGENTS.md`.
